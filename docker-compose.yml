@@ -1,0 +1,49 @@
+version: '3.3'
+services:
+    web:
+        build: .
+        ports:
+          - "8000:80"
+        env_file: ./conf/env.conf
+        volumes:
+          - ./src:/var/www/html
+        working_dir: /var/www/html
+        links:
+          - db
+          - test
+          - cache
+          - maildev
+
+    db:
+        image: mysql:5.6
+        env_file: ./conf/env.conf
+        volumes:
+          - /var/lib/mysql
+          - ./conf/my.cnf:/etc/mysql/conf.d/docker.cnf
+
+    test:
+        image: mysql:5.6
+        env_file: ./conf/env.conf
+        volumes:
+          - /var/lib/mysql
+          - ./conf/my.cnf:/etc/mysql/conf.d/docker.cnf
+
+    cache:
+        image: redis:3.2
+        volumes:
+          - ./cache:/data
+        environment:
+          - "TZ=Asia/Tokyo"
+
+    maildev:
+        image: bmsms/maildev:iconv
+        ports:
+          - '1080:80'
+
+    dusk:
+        image: selenium/standalone-chrome:latest
+
+networks:
+  default:
+    external:
+      name: shared
